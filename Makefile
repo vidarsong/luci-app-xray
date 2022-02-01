@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-xray
-PKG_VERSION:=1.8.0
+PKG_VERSION:=1.9.0
 PKG_RELEASE:=1
 
 PKG_LICENSE:=MPLv2
@@ -15,7 +15,7 @@ define Package/$(PKG_NAME)
 	SECTION:=Custom
 	CATEGORY:=Extra packages
 	TITLE:=LuCI Support for Xray
-	DEPENDS:=+luci-base +xray-core +dnsmasq +ipset +firewall +iptables +iptables-mod-tproxy +ca-bundle
+	DEPENDS:=+luci-base +xray-core +dnsmasq +ipset +firewall +iptables +iptables-mod-tproxy +ca-bundle +@PACKAGE_XRAY_INCLUDE_GEODATA_BROWSER:xray-geodata +@PACKAGE_XRAY_INCLUDE_GEODATA_BROWSER:lua-protobuf
 	PKGARCH:=all
 endef
 
@@ -52,6 +52,10 @@ endchoice
 
 config PACKAGE_XRAY_OPTIONAL_FEATURE_1000
 	bool "Include Optional Feature pull/1000 (metrics support))"
+	default n
+
+config PACKAGE_XRAY_INCLUDE_GEODATA_BROWSER
+	bool "Include GeoIP and GeoSite Browser"
 	default n
 
 endmenu
@@ -122,7 +126,14 @@ ifdef CONFIG_PACKAGE_XRAY_OPTIONAL_FEATURE_1000
 	$(INSTALL_DATA) ./root/usr/share/xray/optional_feature_1000 $(1)/usr/share/xray/optional_feature_1000
 endif
 	$(INSTALL_BIN) ./root/usr/share/xray/gen_ipset_rules.lua $(1)/usr/share/xray/gen_ipset_rules.lua
+ifdef CONFIG_PACKAGE_XRAY_INCLUDE_GEODATA_BROWSER
+	$(INSTALL_DATA) ./root/usr/share/xray/geoip_list.pb $(1)/usr/share/xray/geoip_list.pb
+	$(INSTALL_DIR) $(1)/usr/libexec/rpcd
+	$(INSTALL_BIN) ./root/usr/libexec/rpcd/geodata $(1)/usr/libexec/rpcd/geodata
+	$(LN) ../../libexec/rpcd/geodata $(1)/usr/share/xray/gen_ipset_rules_extra.lua
+else
 	$(INSTALL_BIN) ./root/usr/share/xray/gen_ipset_rules_extra_normal.lua $(1)/usr/share/xray/gen_ipset_rules_extra.lua
+endif
 	$(INSTALL_BIN) ./root/usr/share/xray/gen_config.lua $(1)/usr/share/xray/gen_config.lua
 	$(INSTALL_BIN) ./root/usr/share/xray/firewall_include.lua $(1)/usr/share/xray/firewall_include.lua
 endef
