@@ -129,6 +129,7 @@ create_when_enable() {
     [ "$(uci_get_by_type general transparent_proxy_enable)" == "1" ] || return 0
     logger -st xray[$$] -p4 "Setting dnsmasq and firewall for transparent proxy..."
     setup_dnsmasq
+    sleep 10
     setup_firewall
 }
 
