@@ -686,10 +686,19 @@ local function dns_conf()
     local fast_dns_ip, fast_dns_port = split_ipv4_host_port(proxy.fast_dns, 53)
     local default_dns_ip, default_dns_port = split_ipv4_host_port(proxy.default_dns, 53)
     local hosts = nil
+
+    local secure_dns_ip0, secure_dns_port0
+    if secure_domain_rules() ~= nil then
+        secure_dns_ip0, secure_dns_port0 = split_ipv4_host_port(proxy.secure_dns, 53)
+    else
+        secure_dns_ip0, secure_dns_port0 = "8.8.8.8",53
+    end
     local servers = {
         {
-            address = fast_dns_ip,
-            port = fast_dns_port,
+            --address = fast_dns_ip,
+            --port = fast_dns_port,
+            address = secure_dns_ip0,
+            port = secure_dns_port0,
             domains = upstream_domain_names(),
         },
         {
