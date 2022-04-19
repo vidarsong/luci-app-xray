@@ -707,20 +707,20 @@ local function dns_conf()
         }
     }
 
-    if fast_domain_rules() ~= nil then
-        table.insert(servers, 2, {
-            address = fast_dns_ip,
-            port = fast_dns_port,
-            domains = fast_domain_rules(),
-        })
-    end
-
     if secure_domain_rules() ~= nil then
         local secure_dns_ip, secure_dns_port = split_ipv4_host_port(proxy.secure_dns, 53)
         table.insert(servers, 2, {
             address = secure_dns_ip,
             port = secure_dns_port,
             domains = secure_domain_rules(),
+        })
+    end
+
+    if fast_domain_rules() ~= nil then
+        table.insert(servers, 2, {
+            address = fast_dns_ip,
+            port = fast_dns_port,
+            domains = fast_domain_rules(),
         })
     end
 
