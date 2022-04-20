@@ -941,6 +941,12 @@ local function rules()
                 domain = secure_domain_rules(),
             })
         end
+        table.insert(result, 1, {
+            type = "field",
+            inboundTag = {"tproxy_tcp_inbound", "tproxy_udp_inbound", "dns_conf_inbound", "https_inbound", "http_inbound"},
+            outboundTag = "direct",
+            domain = fast_domain_rules()
+        })
         if blocked_domain_rules() ~= nil then
             table.insert(result, 1, {
                 type = "field",
@@ -949,12 +955,6 @@ local function rules()
                 domain = blocked_domain_rules(),
             })
         end
-        table.insert(result, 1, {
-            type = "field",
-            inboundTag = {"tproxy_tcp_inbound", "tproxy_udp_inbound", "dns_conf_inbound", "https_inbound", "http_inbound"},
-            outboundTag = "direct",
-            domain = fast_domain_rules()
-        })
     end
     for _, v in ipairs(manual_tproxy_rules()) do
         table.insert(result, 1, v)
