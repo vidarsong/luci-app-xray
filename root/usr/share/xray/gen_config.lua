@@ -293,7 +293,8 @@ local function shadowsocks_outbound(server, tag)
                     address = server.server,
                     port = tonumber(server.server_port),
                     password = server.password,
-                    method = server.shadowsocks_security
+                    method = server.shadowsocks_security,
+                    uot = server.shadowsocks_udp_over_tcp == '1'
                 }
             }
         },
@@ -861,7 +862,20 @@ local function rules()
         })
     end
     if geoip_existence then
-        if proxy.geoip_direct_code ~= nil then
+        if proxy.geoip_direct_code == nil or proxy.geoip_direct_code == "upgrade" then
+            if proxy.geoip_direct_code_list ~= nil then
+                local geoip_direct_code_list = {}
+                for _, v in ipairs(proxy.geoip_direct_code_list) do
+                    table.insert(geoip_direct_code_list, "geoip:" .. v)
+                end
+                table.insert(result, 1, {
+                    type = "field",
+                    inboundTag = {"tproxy_tcp_inbound", "tproxy_udp_inbound", "dns_conf_inbound"},
+                    outboundTag = "direct",
+                    ip = geoip_direct_code_list
+                })
+            end
+        else
             table.insert(result, 1, {
                 type = "field",
                 inboundTag = {"tproxy_tcp_inbound", "tproxy_udp_inbound", "dns_conf_inbound"},
