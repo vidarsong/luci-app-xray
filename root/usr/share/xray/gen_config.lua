@@ -633,10 +633,10 @@ local function dns_conf()
     end
     local servers = {
         {
-            --address = fast_dns_ip,
-            --port = fast_dns_port,
-            address = secure_dns_ip0,
-            port = secure_dns_port0,
+            address = fast_dns_ip,
+            port = fast_dns_port,
+            --address = secure_dns_ip0,
+            --port = secure_dns_port0,
             domains = upstream_domain_names(),
         },
         {
@@ -959,14 +959,14 @@ local function rules()
                 domain = blocked_domain_rules(),
             })
         end
-        local geosite_ads_all_rules = {}
-        table.insert(geosite_ads_all_rules, "geosite:category-ads-all")
-        table.insert(result, 1, {
-            type = "field",
-            inboundTag = {"tproxy_tcp_inbound", "tproxy_udp_inbound", "dns_conf_inbound"},
-            outboundTag = "blackhole_outbound",
-            domain = geosite_ads_all_rules,
-        })
+        --local geosite_ads_all_rules = {}
+        --table.insert(geosite_ads_all_rules, "geosite:category-ads-all")
+        --table.insert(result, 1, {
+        --    type = "field",
+        --    inboundTag = {"tproxy_tcp_inbound", "tproxy_udp_inbound", "dns_conf_inbound"},
+        --    outboundTag = "blackhole_outbound",
+        --    domain = geosite_ads_all_rules,
+        --})
     end
     for _, v in ipairs(manual_tproxy_rules()) do
         table.insert(result, 1, v)
