@@ -5,14 +5,16 @@
     cursor.load("xray");
     const config = cursor.get_all("xray");
     const general = config[filter(keys(config), k => config[k][".type"] == "general")[0]];
-    const tp_spec_src_fw = map(filter(keys(config), k => config[k][".type"] == "lan_hosts" && config[k].bypassed == "0"), k => config[k].macaddr) || [];
-    const tp_spec_src_bp = map(filter(keys(config), k => config[k][".type"] == "lan_hosts" && config[k].bypassed == "1"), k => config[k].macaddr) || [];
-    const uids_direct = general.uids_direct || [];
-    const gids_direct = general.gids_direct || [];
-    let wan_bp_ips = general.wan_bp_ips || [];
-    let wan_fw_ips = general.wan_fw_ips || [];
-    push(wan_bp_ips, split(general.fast_dns, ":")[0]);
-    push(wan_fw_ips, split(general.secure_dns, ":")[0]);
+    const tp_spec_src_fw = uniq(map(filter(keys(config), k => config[k][".type"] == "lan_hosts" && config[k].bypassed == "0"), k => config[k].macaddr) || []);
+    const tp_spec_src_bp = uniq(map(filter(keys(config), k => config[k][".type"] == "lan_hosts" && config[k].bypassed == "1"), k => config[k].macaddr) || []);
+    const uids_direct = uniq(general.uids_direct || []);
+    const gids_direct = uniq(general.gids_direct || []);
+    let wan_bp_ips_no_dns = general.wan_bp_ips || [];
+    let wan_fw_ips_no_dns = general.wan_fw_ips || [];
+    push(wan_bp_ips_no_dns, split(general.fast_dns, ":")[0]);
+    push(wan_fw_ips_no_dns, split(general.secure_dns, ":")[0]);
+    const wan_bp_ips = uniq(wan_bp_ips_no_dns);
+    const wan_fw_ips = uniq(wan_fw_ips_no_dns);
 %}
     set tp_spec_src_ac {
         type ether_addr
@@ -87,7 +89,14 @@
     }
 
     chain tp_spec_lan_dg {
+        ip daddr @tp_spec_dst_fw jump tp_spec_lan_re
         ip daddr @tp_spec_dst_sp return
+        ip daddr @tp_spec_dst_bp return
+        ip daddr @tp_spec_def_gw return
+        jump tp_spec_lan_re
+    }
+
+    chain tp_spec_lan_re {
         meta l4proto { tcp, udp } jump tp_spec_lan_ac
     }
 
@@ -98,9 +107,6 @@
     }
 
     chain tp_spec_wan_dg {
-        ip daddr @tp_spec_dst_sp return
-        ip daddr @tp_spec_dst_bp return
-        ip daddr @tp_spec_def_gw return
 {% if (length(uids_direct) > 0): %}
         meta skuid { {{ join(", ", uids_direct) }} } return
 {% endif %}
@@ -108,6 +114,14 @@
         meta skgid { {{ join(", ", gids_direct) }} } return
 {% endif %}
         meta mark {{ sprintf("0x%08x", general.mark) }} return
+        ip daddr @tp_spec_dst_fw jump tp_spec_wan_re
+        ip daddr @tp_spec_dst_sp return
+        ip daddr @tp_spec_dst_bp return
+        ip daddr @tp_spec_def_gw return
+        jump tp_spec_wan_re
+    }
+
+    chain tp_spec_wan_re {
         meta l4proto { tcp, udp } meta mark set 0x000000fc
     }
 

@@ -7,7 +7,7 @@ Focus on making the most of Xray (HTTP/HTTPS/Socks/TProxy inbounds, multiple pro
 ## Warnings
 
 * Support for nftables / firewall4 is **experimental** and
-    * only works with OpenWrt 22.03 versions or master branch with firewall4 as the only firewall implementation
+    * only works with OpenWrt 22.03 versions or master branch with firewall4 as the only firewall implementation. Note that there is a possible bug in nftables 1.0.3 / 1.0.4 which breaks tproxy, so if you use master branch, make sure your source code is newer than [36bec544d73dbed46f06875fdfa570e89a40e553](https://github.com/openwrt/openwrt/commit/36bec544d73dbed46f06875fdfa570e89a40e553)
     * may **NOT** be as stable as the old implementation using iptables and fw3 due to the lack of hooking facilities in fw4. However it should be good enough for daily use so if you encounter problems please report.
     * currently only tested with a proper buildroot environment. Building ipk with OpenWrt SDK is **NOT** tested and is **NOT** likely to work right now. If you are building ipks yourself, use the proper version of buildroot toolchain which matches the firewall implementation (fw3 or fw4) you are using.
 * There will be a series of **BREAKING CHANGES** in the following months due to some major refactor of DNS module. Please read changelog carefully to know about breaking changes and always backup your configuration files before updating.
@@ -40,6 +40,10 @@ Focus on making the most of Xray (HTTP/HTTPS/Socks/TProxy inbounds, multiple pro
 * 2022-06-05 feat: shadowsocks-2022 UDP over TCP support
 * 2022-06-14 feat: multiple geoip direct code
 * 2022-06-19 feat: skip proxy for specific uids / gids (nftables support only)
+* 2022-08-07 fix: avoid duplicated items in generated nftables ruleset
+* 2022-08-08 fix: make sure forwarded IPs are always forwarded to Xray even for reserved addresses. Xray may not forward those requests so that manner may be changed later.
+* 2022-08-13 fix: apply 2022-08-08 fix to iptables as well
+* 2022-09-01 feat: specify outbound for manual transparent proxy
 
 ## Changelog 2021
 
@@ -89,3 +93,7 @@ Focus on making the most of Xray (HTTP/HTTPS/Socks/TProxy inbounds, multiple pro
 * [x] transparent proxy access control for LAN
 * [x] try to be compatible with [OpenWrt Packages: xray-core](https://github.com/openwrt/packages/tree/master/net/xray-core)
 * [ ] Better DNS module implementation like DoH (may involve breaking changes)
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=yichya/luci-app-xray&type=Date)](https://star-history.com/#yichya/luci-app-xray&Date)
